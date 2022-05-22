@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../view_model/bloc/character_bloc.dart';
+import '../view_model/cubit/episodes_cubit.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -46,24 +50,40 @@ class HomeView extends StatelessWidget {
             ),
             SizedBox(
               height: 150,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: 5,
-                itemBuilder: (context, index) => ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: GestureDetector(
-                    onTap: () => null,
-                    child: SizedBox(
-                      width: 200,
-                      child: Image.network(
-                        'https://rickandmortyapi.com/api/character/avatar/1.jpeg',
-                        fit: BoxFit.cover,
+              child: BlocConsumer<CharacterBloc, CharacterState>(
+                listener: (context, state) {
+                  // TODO: implement listener
+                },
+                builder: (context, state) {
+                  if (state is CharacterLoading) {
+                    return const Center(
+                        child: CircularProgressIndicator.adaptive());
+                  } else if (state is CharacterComplated) {
+                    return ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 5,
+                      itemBuilder: (context, index) => ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: GestureDetector(
+                          onTap: () => null,
+                          child: SizedBox(
+                            width: 200,
+                            child: Image.network(
+                              'https://picsum.photos/800/800',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-                separatorBuilder: (BuildContext context, int index) =>
-                    const SizedBox(width: 10),
+                      separatorBuilder: (BuildContext context, int index) =>
+                          const SizedBox(width: 10),
+                    );
+                  } else if (state is CharacterError) {
+                    return const Center(child: Text('Hataa'));
+                  } else {
+                    return const SizedBox();
+                  }
+                },
               ),
             ),
             const SizedBox(height: 25),
@@ -72,19 +92,35 @@ class HomeView extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
             Expanded(
-              child: ListView.separated(
-                itemCount: 5,
-                itemBuilder: (context, index) => Card(
-                  child: ListTile(
-                    title: const Text('bölüm 1 '),
-                    subtitle: const Text('20.10.2021'),
-                    trailing: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.keyboard_arrow_right),
-                    ),
-                  ),
-                ),
-                separatorBuilder: (context, index) => const SizedBox(height: 5),
+              child: BlocConsumer<EpisodesCubit, EpisodesState>(
+                listener: (context, state) {
+                  // TODO: implement listener
+                },
+                builder: (context, state) {
+                  if (state is EpisodesComplated) {
+                    return ListView.separated(
+                      itemCount: state.episodes.length,
+                      itemBuilder: (context, index) => Card(
+                        child: ListTile(
+                          title: Text(state.episodes[index].episode.toString()),
+                          subtitle:
+                              Text(state.episodes[index].airDate.toString()),
+                          trailing: IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.keyboard_arrow_right),
+                          ),
+                        ),
+                      ),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 5),
+                    );
+                  } else if (state is EpisodesLoading) {
+                    return const Center(
+                        child: CircularProgressIndicator.adaptive());
+                  } else {
+                    return const Center(child: Text('Hata'));
+                  }
+                },
               ),
             )
           ],
